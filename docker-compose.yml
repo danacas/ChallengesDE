@@ -1,0 +1,45 @@
+version: '3.7'
+services:
+    db:
+        # docker run -p 5433:5432 --name task-db -e POSTGRES_USER=taskdb -e POSTGRES_PASSWORD=taskdb -e POSTGRES_DB=taskdb -d postgres:13
+        container_name: task-db
+        hostname: task-db
+        # image: postgres:13
+        image: task-db-image
+        build:
+            context: .
+            dockerfile: Dockerfile.db
+        environment:
+            - ENV_DESC=TASK-DB
+            - POSTGRES_USER=taskdb
+            - POSTGRES_PASSWORD=taskdb
+            - POSTGRES_DB=taskdb
+        restart: always
+        ports:
+            - 5432:5432
+        logging:
+            options:
+                max-size: 10m
+                max-file: "3"
+
+    etl:
+        container_name: task-etl
+        # Spark fails if hostname has underscore
+        hostname: task-etl
+        depends_on:
+            - db
+        image: task-pyspark-image
+        build:
+            context: .
+            dockerfile: Dockerfile.etl
+        stdin_open: true # docker run -i
+        tty: true        # docker run -t
+        entrypoint: /bin/bash
+        # command: [ "python /root/ingestion.py","python /root/reports.py"]
+        environment:
+            - ENV_DESC=TASK-ETL
+        logging:
+            options:
+                max-size: 10m
+                max-file: "3"
+

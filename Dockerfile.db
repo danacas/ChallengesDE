@@ -1,0 +1,8 @@
+
+# FROM postgres:13 as runtime_image
+FROM postgis/postgis:13-3.0 as runtime_image
+
+COPY init_database.sql /docker-entrypoint-initdb.d/
+
+# End of the Dockerfile #
+
